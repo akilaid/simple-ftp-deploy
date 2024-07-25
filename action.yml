@@ -1,4 +1,4 @@
-name: 'FTP Upload Action'
+name: 'Simple ftp Deploy'
 description: 'A GitHub Action to upload files to an FTP server'
 author: 'Akila Indunil'
 inputs:
