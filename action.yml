@@ -32,14 +32,17 @@ runs:
       with:
         python-version: '3.x'
 
+    - name: Copy FTP upload script
+      shell: bash
+      run: cp ftp_upload.py $GITHUB_WORKSPACE
+
     - name: List repository files
       shell: bash
-      run: ls -la
+      run: ls -la $GITHUB_WORKSPACE
 
     - name: Run FTP Upload Script
       shell: bash
-      run: |
-        python ftp_upload.py
+      run: python $GITHUB_WORKSPACE/ftp_upload.py
       env:
         FTP_HOST: ${{ inputs.host }}
         FTP_USERNAME: ${{ inputs.username }}
@@ -47,3 +50,7 @@ runs:
         FTP_DIR: ${{ inputs.ftpdir }}
         LOCAL_DIR: ${{ inputs.localdir }}
         HASH_FILE: ${{ inputs.hashfile }}
+
+branding:
+  icon: 'upload'
+  color: 'blue'
