@@ -93,6 +93,17 @@ def main():
     print(f'Listing files in local directory: {local_directory}')
     list_files_in_directory(local_directory)
 
+    # Generate current file hashes, excluding the script file and specified directories
+    script_file_name = 'ftp_upload.py'  # Assuming the script is named ftp_upload.py
+    print(f'Generating file hashes for local directory: {local_directory}')
+    current_file_hashes = generate_file_hashes(local_directory, exclude_files=[script_file_name], exclude_dirs=['.git', '.github'])
+    print(f'Generated file hashes: {current_file_hashes}')
+
+    # Save the hash file locally
+    with open(hash_file_name, 'w') as f:
+        json.dump(current_file_hashes, f)
+    print(f'Local hash file created: {hash_file_name}')
+
     print('Connecting to FTP server...')
     # Connect to the FTP server
     ftp = ftplib.FTP(ftp_server)
@@ -117,12 +128,6 @@ def main():
         print(f'No existing hash file found. Assuming first-time upload.')
         server_file_hashes = {}
         first_time_upload = True
-
-    # Generate current file hashes, excluding the script file and specified directories
-    script_file_name = 'ftp_upload.py'  # Assuming the script is named ftp_upload.py
-    print(f'Generating file hashes for local directory: {local_directory}')
-    current_file_hashes = generate_file_hashes(local_directory, exclude_files=[script_file_name], exclude_dirs=['.git', '.github'])
-    print(f'Generated file hashes: {current_file_hashes}')
 
     # Determine files to upload
     files_to_upload = []
@@ -151,8 +156,6 @@ def main():
     print('Deleted extra files on the server.')
 
     # Upload the hash file
-    with open(hash_file_name, 'w') as f:
-        json.dump(current_file_hashes, f)
     print(f'Uploading hash file: {hash_file_name}')
     upload_file(ftp, hash_file_name, os.path.join(ftp_directory, hash_file_name))
     print(f'Uploaded hash file: {hash_file_name}')
