@@ -1,4 +1,4 @@
-name: 'Simple ftp Deploy'
+name: 'python ftp deploy'
 description: 'A GitHub Action to upload files to an FTP server'
 author: 'Akila Indunil'
 inputs:
