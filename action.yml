@@ -33,6 +33,7 @@ runs:
         python-version: '3.x'
 
     - name: List repository files
+      shell: bash
       run: ls -la
 
     - name: Run FTP Upload Script
