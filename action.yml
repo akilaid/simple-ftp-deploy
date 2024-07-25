@@ -32,13 +32,23 @@ runs:
       with:
         python-version: '3.x'
 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Verify repository contents
+      shell: bash
+      run: ls -la
+
     - name: Copy FTP upload script
       shell: bash
-      run: cp ftp_upload.py $GITHUB_WORKSPACE
-
-    - name: List repository files
-      shell: bash
-      run: ls -la $GITHUB_WORKSPACE
+      run: |
+        if [ -f ftp_upload.py ]; then
+          cp ftp_upload.py $GITHUB_WORKSPACE
+          echo "Copied ftp_upload.py to $GITHUB_WORKSPACE"
+        else
+          echo "ftp_upload.py not found in the repository"
+          exit 1
+        fi
 
     - name: Run FTP Upload Script
       shell: bash
