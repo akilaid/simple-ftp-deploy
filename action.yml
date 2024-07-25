@@ -32,9 +32,9 @@ runs:
       with:
         python-version: '3.x'
 
-    - name: Install dependencies
-      shell: bash
-      run: pip install hashlib ftplib
+    # - name: Install dependencies
+    #   shell: bash
+    #   run: pip install hashlib ftplib
 
     - name: Run FTP Upload Script
       shell: bash
