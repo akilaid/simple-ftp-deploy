@@ -17,15 +17,19 @@ def generate_file_hashes(directory, exclude_files=None, exclude_dirs=None):
     exclude_files = exclude_files or []
     exclude_dirs = exclude_dirs or []
     for root, dirs, files in os.walk(directory):
+        print(f"Visiting directory: {root}")
         # Exclude specified directories
         dirs[:] = [d for d in dirs if d not in exclude_dirs]
+        print(f"Directories after exclusion: {dirs}")
         for file_name in files:
             # Skip excluded files
             if file_name in exclude_files:
+                print(f"Skipping excluded file: {file_name}")
                 continue
             file_path = os.path.join(root, file_name)
             relative_path = os.path.relpath(file_path, directory)
             file_hashes[relative_path] = calculate_md5(file_path)
+            print(f"Added hash for file: {relative_path}")
     return file_hashes
 
 def create_ftp_directory(ftp, directory_path):
