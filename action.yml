@@ -1,0 +1,50 @@
+name: 'FTP Upload Action'
+description: 'A GitHub Action to upload files to an FTP server'
+author: 'Akila Indunil'
+inputs:
+  host:
+    description: 'FTP server hostname'
+    required: true
+  username:
+    description: 'FTP server username'
+    required: true
+  password:
+    description: 'FTP server password'
+    required: true
+  ftpdir:
+    description: 'FTP server directory (default: ./)'
+    required: false
+    default: './'
+  localdir:
+    description: 'Local directory to upload (default: ./)'
+    required: false
+    default: './'
+  hashfile:
+    description: 'Name of the hash file (default: .file_hashes.json)'
+    required: false
+    default: '.file_hashes.json'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install hashlib ftplib
+
+    - name: Run FTP Upload Script
+      run: python ftp_upload.py
+      env:
+        FTP_HOST: ${{ inputs.host }}
+        FTP_USERNAME: ${{ inputs.username }}
+        FTP_PASSWORD: ${{ inputs.password }}
+        FTP_DIR: ${{ inputs.ftpdir }}
+        LOCAL_DIR: ${{ inputs.localdir }}
+        HASH_FILE: ${{ inputs.hashfile }}
+
+branding:
+  icon: 'upload'
+  color: 'blue'
