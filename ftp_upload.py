@@ -51,21 +51,19 @@ def upload_file(ftp, file_path, remote_path):
 def list_all_files_ftp(ftp, path):
     """Recursively list all files in a given directory on the FTP server."""
     all_files = []
-    def walk_dir(dir_path):
+    dirs = [path]
+    while dirs:
+        current_dir = dirs.pop()
         try:
-            ftp.cwd(dir_path)
-            items = ftp.nlst()
+            items = ftp.nlst(current_dir)
             for item in items:
-                item_path = os.path.join(dir_path, item)
-                try:
-                    ftp.cwd(item_path)  # If we can change directory, it's a folder
-                    walk_dir(item_path)
-                except ftplib.error_perm:
-                    all_files.append(item_path)  # If we can't change directory, it's a file
+                if item.endswith('/'):
+                    dirs.append(item)
+                else:
+                    all_files.append(item)
         except ftplib.error_perm as e:
             if not str(e).startswith('550'):  # Directory not found
                 raise
-    walk_dir(path)
     return all_files
 
 def main():
@@ -76,28 +74,19 @@ def main():
     local_directory = os.getenv('LOCAL_DIR', './')
     hash_file_name = os.getenv('HASH_FILE', '.file_hashes.json')
 
-    # Name of the script file (assuming it's named 'ftp_upload.py')
+    # Name of the script file
     script_file_name = os.path.basename(__file__)
 
     print('Connecting to FTP server...')
-    # Connect to the FTP server
     ftp = ftplib.FTP(ftp_server)
     ftp.login(user=ftp_username, passwd=ftp_password)
     ftp.set_pasv(True)
     print('Connected to FTP server.')
 
-    # List all files and folders on the FTP server before changing the directory
-    print('Listing all files and folders on the FTP server after authentication:')
-    all_files_on_ftp = list_all_files_ftp(ftp, '/')
-    for file in all_files_on_ftp:
-        print(file)
-
-    # Change to the desired directory
     print(f'Changing to directory: {ftp_directory}')
     ftp.cwd(ftp_directory)
     print(f'Changed to directory: {ftp_directory}')
 
-    # Check for existing hash file on the server
     first_time_upload = False
     try:
         print(f'Checking for existing hash file: {hash_file_name}')
@@ -110,12 +99,10 @@ def main():
         server_file_hashes = {}
         first_time_upload = True
 
-    # Generate current file hashes, excluding the script file
     print(f'Generating file hashes for local directory: {local_directory}')
     current_file_hashes = generate_file_hashes(local_directory, exclude_files=[script_file_name])
     print('Generated file hashes.')
 
-    # Determine files to upload
     files_to_upload = []
     if first_time_upload:
         print('First time upload: Uploading all files.')
@@ -130,20 +117,17 @@ def main():
                 print(f'File unchanged: {file}')
         print(f'Files to upload: {files_to_upload}')
 
-    # Upload files
     for file in files_to_upload:
         local_file_path = os.path.join(local_directory, file)
         remote_file_path = os.path.join(ftp_directory, file)
         upload_file(ftp, local_file_path, remote_file_path)
 
-    # Upload the hash file
     with open(hash_file_name, 'w') as f:
         json.dump(current_file_hashes, f)
     print(f'Uploading hash file: {hash_file_name}')
     upload_file(ftp, hash_file_name, os.path.join(ftp_directory, hash_file_name))
     print(f'Uploaded hash file: {hash_file_name}')
 
-    # Close the connection
     print('Closing FTP connection...')
     ftp.quit()
     print('FTP connection closed.')
