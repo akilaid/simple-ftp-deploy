@@ -135,18 +135,21 @@ def main():
 
     # Determine files to upload
     files_to_upload = []
+
     if first_time_upload:
         print('First time upload: Uploading all files.')
         files_to_upload = list(current_file_hashes.keys())
     else:
         print('Determining modified or new files...')
         for file, hash in current_file_hashes.items():
-            if current_file_hashes[file] != server_file_hashes.get(file):
-                print(f'File modified or new: {file}')
+            if file not in server_file_hashes:
+                print(f'New file: {file}')
                 files_to_upload.append(file)
-            else:
-                #print(f'File unchanged: {file}')
-        print(f'Files to upload: {files_to_upload}')
+            elif current_file_hashes[file] != server_file_hashes.get(file):
+                print(f'Modified file: {file}')
+                files_to_upload.append(file)
+
+    print(f'Files to upload: {files_to_upload}')
 
     # Upload files
     for file in files_to_upload:
