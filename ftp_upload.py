@@ -55,7 +55,7 @@ def upload_file(ftp, file_path, remote_path):
 def delete_extra_files_on_ftp(ftp, server_file_hashes, local_file_hashes):
     """Delete files from the FTP server that do not exist in the local files."""
     files_deleted = []
-    for file in server_file_hashes:
+    for file in list(server_file_hashes.keys()):
         if file not in local_file_hashes:
             print(f'Deleting extra file on server: {file}')
             try:
@@ -103,11 +103,6 @@ def main():
     print(f'Generating file hashes for local directory: {local_directory}')
     current_file_hashes = generate_file_hashes(local_directory, exclude_files=[script_file_name], exclude_dirs=['.git', '.github'])
     print(f'Generated file hashes: {current_file_hashes}')
-
-    # Save the hash file locally
-    with open(hash_file_name, 'w') as f:
-        json.dump(current_file_hashes, f)
-    print(f'Local hash file created: {hash_file_name}')
 
     print('Connecting to FTP server...')
     # Connect to the FTP server
