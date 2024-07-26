@@ -136,6 +136,8 @@ def main():
     # Determine files to upload
     files_to_upload = []
 
+    files_to_upload = []
+
     if first_time_upload:
         print('First time upload: Uploading all files.')
         files_to_upload = list(current_file_hashes.keys())
@@ -150,6 +152,7 @@ def main():
                 files_to_upload.append(file)
 
     print(f'Files to upload: {files_to_upload}')
+
 
     # Upload files
     for file in files_to_upload:
