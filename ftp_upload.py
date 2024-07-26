@@ -17,10 +17,8 @@ def generate_file_hashes(directory, exclude_files=None, exclude_dirs=None):
     exclude_files = exclude_files or []
     exclude_dirs = exclude_dirs or []
     for root, dirs, files in os.walk(directory):
-        #print(f"Visiting directory: {root}")
         # Exclude specified directories
         dirs[:] = [d for d in dirs if d not in exclude_dirs]
-        #print(f"Directories after exclusion: {dirs}")
         for file_name in files:
             # Skip excluded files
             if file_name in exclude_files:
@@ -29,7 +27,6 @@ def generate_file_hashes(directory, exclude_files=None, exclude_dirs=None):
             file_path = os.path.join(root, file_name)
             relative_path = os.path.relpath(file_path, directory)
             file_hashes[relative_path] = calculate_md5(file_path)
-            #print(f"Added hash for file: {relative_path}")
     return file_hashes
 
 def create_ftp_directory(ftp, directory_path):
@@ -56,19 +53,23 @@ def upload_file(ftp, file_path, remote_path):
     print(f'Uploaded file: {file_path}')
 
 def delete_extra_files_on_ftp(ftp, server_file_hashes, local_file_hashes):
-    """Delete files from the FTP server that do not exist in the local files, only if they are explicitly listed."""
+    """Delete files from the FTP server that do not exist in the local files."""
+    files_deleted = []
     for file in server_file_hashes:
         if file not in local_file_hashes:
             print(f'Deleting extra file on server: {file}')
             try:
                 ftp.delete(file)
                 print(f'Deleted file: {file}')
+                files_deleted.append(file)
             except ftplib.error_perm as e:
                 if 'No such file or directory' in str(e):
                     print(f'File already deleted: {file}')
                 else:
                     print(f'Error deleting file {file}: {e}')
-
+    # Remove deleted files from server_file_hashes
+    for file in files_deleted:
+        del server_file_hashes[file]
 
 def list_files_in_directory(directory):
     """List all files in the given directory and its subdirectories."""
@@ -96,10 +97,6 @@ def main():
     print(f'FTP Directory: {ftp_directory}')
     print(f'Local Directory: {local_directory}')
     print(f'Hash File Name: {hash_file_name}')
-
-    # List files in the local directory
-    #print(f'Listing files in local directory: {local_directory}')
-    #list_files_in_directory(local_directory)
 
     # Generate current file hashes, excluding the script file and specified directories
     script_file_name = 'ftp_upload.py'  # Assuming the script is named ftp_upload.py
@@ -140,8 +137,6 @@ def main():
     # Determine files to upload
     files_to_upload = []
 
-    files_to_upload = []
-
     if first_time_upload:
         print('First time upload: Uploading all files.')
         files_to_upload = list(current_file_hashes.keys())
@@ -157,7 +152,6 @@ def main():
 
     print(f'Files to upload: {files_to_upload}')
 
-
     # Upload files
     for file in files_to_upload:
         local_file_path = os.path.join(local_directory, file)
@@ -169,7 +163,14 @@ def main():
     delete_extra_files_on_ftp(ftp, server_file_hashes, current_file_hashes)
     print('Deleted extra files on the server.')
 
-    # Upload the hash file
+    # Update the server_file_hashes with current_file_hashes after file operations
+    server_file_hashes.update(current_file_hashes)
+
+    # Save the updated hash file locally again to reflect any changes made by delete_extra_files_on_ftp
+    with open(hash_file_name, 'w') as f:
+        json.dump(server_file_hashes, f)
+
+    # Upload the updated hash file to the server
     print(f'Uploading hash file: {hash_file_name}')
     upload_file(ftp, hash_file_name, os.path.join(ftp_directory, hash_file_name))
     print(f'Uploaded hash file: {hash_file_name}')
