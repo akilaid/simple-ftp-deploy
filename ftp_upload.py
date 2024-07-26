@@ -64,7 +64,11 @@ def delete_extra_files_on_ftp(ftp, server_file_hashes, local_file_hashes):
                 ftp.delete(file)
                 print(f'Deleted file: {file}')
             except ftplib.error_perm as e:
-                print(f'Error deleting file {file}: {e}')
+                if 'No such file or directory' in str(e):
+                    print(f'File already deleted: {file}')
+                else:
+                    print(f'Error deleting file {file}: {e}')
+
 
 def list_files_in_directory(directory):
     """List all files in the given directory and its subdirectories."""
