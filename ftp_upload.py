@@ -65,6 +65,7 @@ def delete_extra_files_on_ftp(ftp, server_file_hashes, local_file_hashes):
             except ftplib.error_perm as e:
                 if 'No such file or directory' in str(e):
                     print(f'File already deleted: {file}')
+                    files_deleted.append(file)
                 else:
                     print(f'Error deleting file {file}: {e}')
     # Remove deleted files from server_file_hashes
@@ -166,9 +167,9 @@ def main():
         json.dump(server_file_hashes, f)
 
     # Upload the updated hash file to the server
-    print(f'Uploading hash file: {hash_file_name}')
+    print(f'Uploading updated hash file: {hash_file_name}')
     upload_file(ftp, hash_file_name, os.path.join(ftp_directory, hash_file_name))
-    print(f'Uploaded hash file: {hash_file_name}')
+    print(f'Uploaded updated hash file: {hash_file_name}')
 
     # Close the connection
     print('Closing FTP connection...')
