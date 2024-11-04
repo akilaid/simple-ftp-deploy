@@ -42,7 +42,7 @@ jobs:
           python-version: '3.x'
 
       - name: Upload files to FTP
-        uses: your-username/simple-ftp-deploy@v1
+        uses: akilaid/simple-ftp-deploy@v1
         with:
           host: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
